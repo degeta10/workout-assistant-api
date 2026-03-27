@@ -1,0 +1,19 @@
+service: workout-assistant-api
+
+provider:
+  name: aws
+  runtime: provided.al2023
+  architecture: arm64
+  region: ap-south-1
+
+functions:
+  api:
+    handler: bootstrap
+    events:
+      - httpApi: "*"
+
+package:
+  individually: true
+  patterns:
+    - "!**"
+    - "bootstrap"

@@ -1,0 +1,10 @@
+.env
+
+bootstrap
+workout-assistant-api
+*.exe
+*.test
+
+vendor/
+
+.DS_Store
