@@ -29,7 +29,7 @@ Available endpoint:
   "status": "pass",
   "version": "1.0.0",
   "release_id": "2026-03-27",
-  "description": "Heavy Duty Workout API",
+  "description": "Workout Assistant API",
   "checks": {
     "database": {
       "status": "connected",

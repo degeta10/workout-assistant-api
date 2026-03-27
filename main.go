@@ -1,3 +1,8 @@
+// @title Workout Assistant API
+// @version 1.0
+// @description This is a high-performance custom workout app.
+// @host localhost:8080
+// @BasePath /v1
 package main
 
 import (
@@ -11,6 +16,9 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/degeta10/workout-assistant-api/internal/auth"
+	"github.com/degeta10/workout-assistant-api/internal/config"
+	"github.com/degeta10/workout-assistant-api/internal/database"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -21,19 +29,17 @@ var ginLambda *ginadapter.GinLambdaV2
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
-	// Global Middleware (Optional: Add CORS here later)
 	r.Use(gin.Recovery())
 
-	// Health Check Group
 	v1 := r.Group("/v1")
 	{
 		v1.GET("/health", healthCheckHandler)
 
-		// Future Workout Routes will go here:
-		// v1.POST("/sessions/start", workout.StartSessionHandler)
+		// Auth "Controller" Routes
+		v1.POST("/register", auth.Register)
+		v1.POST("/login", auth.Login)
 	}
 
-	// 404 Handler for debugging
 	r.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{
 			"error":         "Route not found",
@@ -44,26 +50,24 @@ func setupRouter() *gin.Engine {
 	return r
 }
 
-// healthCheckHandler verifies API and Database status
 func healthCheckHandler(c *gin.Context) {
 	status := "pass"
 	dbStatus := "connected"
 
-	// Check real DB connection if DB is initialized
-	// if database.DB != nil {
-	// 	if err := database.DB.Ping(); err != nil {
-	// 		status = "fail"
-	// 		dbStatus = "disconnected"
-	// 	}
-	// } else {
-	// 	dbStatus = "not_initialized"
-	// }
+	if database.DB != nil {
+		if err := database.DB.Ping(); err != nil {
+			status = "fail"
+			dbStatus = "disconnected"
+		}
+	} else {
+		dbStatus = "not_initialized"
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"status":      status,
 		"version":     "1.0.0",
 		"release_id":  time.Now().Format("2006-01-02"),
-		"description": "Heavy Duty Workout API",
+		"description": config.LoadConfig().AppName + " API",
 		"checks": gin.H{
 			"database": gin.H{
 				"status":         dbStatus,
@@ -74,15 +78,21 @@ func healthCheckHandler(c *gin.Context) {
 	})
 }
 
-// Handler is the entry point for AWS Lambda (APIGateway V2)
 func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	// If AWS sends a path like /dev/v1/health, we strip the stage
 	req.RawPath = strings.TrimPrefix(req.RawPath, "/dev")
 	req.RawPath = strings.TrimPrefix(req.RawPath, "/prod")
 
 	if ginLambda == nil {
-		// Lazy initialize router if not already done
 		gin.SetMode(gin.ReleaseMode)
+
+		// 1. Load config in Lambda environment
+		cfg := config.LoadConfig()
+
+		// 2. Initialize DB for Lambda
+		if err := database.InitDB(cfg.DB); err != nil {
+			log.Printf("Lambda DB Init failed: %v", err)
+		}
+
 		router := setupRouter()
 		ginLambda = ginadapter.NewV2(router)
 	}
@@ -91,37 +101,32 @@ func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.AP
 }
 
 func main() {
-	// 1. Detect Environment
 	isLambda := os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != ""
 
 	if !isLambda {
-		// LOCAL DEVELOPMENT FLOW
-		log.Println("--- Starting Heavy Duty API Locally ---")
+		log.Printf("--- Starting %s API Locally ---", config.LoadConfig().AppName)
 
-		// Load .env
+		// Load .env only for local development
 		if err := godotenv.Load(); err != nil {
-			log.Println("Warning: No .env file found")
+			log.Println("Warning: No .env file found, using system environment variables")
 		}
 
-		// Initialize Database
-		// if err := database.InitDB(); err != nil {
-		// 	log.Printf("Database connection failed: %v", err)
-		// }
+		// 1. Load the Config struct using our new package
+		cfg := config.LoadConfig()
 
-		// Initialize Router
+		// 2. Pass only the DB portion of the config to InitDB
+		if err := database.InitDB(cfg.DB); err != nil {
+			log.Fatalf("Database connection failed: %v", err)
+		}
+
 		router := setupRouter()
 
-		log.Println("Server running at: http://localhost:8080")
-		if err := http.ListenAndServe(":8080", router); err != nil {
+		log.Printf("Server running at: http://localhost:%s", cfg.AppPort)
+		if err := http.ListenAndServe(":"+cfg.AppPort, router); err != nil {
 			log.Fatalf("Failed to start local server: %v", err)
 		}
 	} else {
 		// AWS LAMBDA FLOW
-		// Note: DB Init on Lambda usually happens inside Handler or init()
-		// for better performance/connection pooling.
-		// if err := database.InitDB(); err != nil {
-		// 	log.Printf("Lambda DB Init failed: %v", err)
-		// }
 		lambda.Start(Handler)
 	}
 }
