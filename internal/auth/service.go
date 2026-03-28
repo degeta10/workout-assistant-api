@@ -37,17 +37,17 @@ func (s *AuthService) Register(ctx context.Context, name, email, password string
 	return id, nil
 }
 
-func (s *AuthService) Login(ctx context.Context, email, password string) (string, error) {
+func (s *AuthService) Login(ctx context.Context, email, password string) (LoginResponse, error) {
 	user, err := s.repo.GetUserByEmail(ctx, email)
 	if err != nil {
 		if err == ErrInvalidCredentials {
-			return "", err
+			return LoginResponse{}, err
 		}
-		return "", fmt.Errorf("get user by email: %w", err)
+		return LoginResponse{}, fmt.Errorf("get user by email: %w", err)
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)) != nil {
-		return "", ErrInvalidCredentials
+		return LoginResponse{}, ErrInvalidCredentials
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -57,8 +57,15 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 
 	tokenString, err := token.SignedString([]byte(s.jwtSecret))
 	if err != nil {
-		return "", fmt.Errorf("sign jwt token: %w", err)
+		return LoginResponse{}, fmt.Errorf("sign jwt token: %w", err)
 	}
 
-	return tokenString, nil
+	return LoginResponse{
+		AccessToken: tokenString,
+		TokenType:   "Bearer",
+		User: UserSummary{
+			Name:  user.Name,
+			Email: user.Email,
+		},
+	}, nil
 }

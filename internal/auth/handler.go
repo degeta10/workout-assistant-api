@@ -63,7 +63,7 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := h.svc.Login(c.Request.Context(), req.Email, req.Password)
+	data, err := h.svc.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
 			responses.Unauthorized(c, "Invalid credentials")
@@ -73,5 +73,5 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	responses.OK(c, "Login successful", gin.H{"access_token": token})
+	responses.OK(c, "Login successful", data)
 }

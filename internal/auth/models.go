@@ -34,6 +34,17 @@ type LoginRequest struct {
 	Password string `json:"password" binding:"required,min=8"`
 }
 
+type LoginResponse struct {
+	AccessToken string      `json:"access_token"`
+	TokenType   string      `json:"token_type"`
+	User        UserSummary `json:"user"`
+}
+
+type UserSummary struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
+}
+
 type Repository interface {
 	CreateUser(ctx context.Context, user User) (uuid.UUID, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
@@ -41,5 +52,5 @@ type Repository interface {
 
 type Service interface {
 	Register(ctx context.Context, name, email, password string) (uuid.UUID, error)
-	Login(ctx context.Context, email, password string) (string, error)
+	Login(ctx context.Context, email, password string) (LoginResponse, error)
 }
