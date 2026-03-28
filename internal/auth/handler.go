@@ -1,71 +1,77 @@
 package auth
 
 import (
+	"errors"
 	"net/http"
-	"os"
-	"time"
 
-	"github.com/degeta10/workout-assistant-api/internal/models"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
-	"golang.org/x/crypto/bcrypt"
 )
+
+type Handler struct {
+	svc Service
+}
+
+func NewHandler(svc Service) *Handler {
+	return &Handler{svc: svc}
+}
+
+func (h *Handler) RegisterRoutes(group *gin.RouterGroup) {
+	group.POST("/register", h.Register)
+	group.POST("/login", h.Login)
+}
 
 // Register godoc
 // @Summary Register a new user
-// @Description Create a user with name, email, and password
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param user body models.RegisterRequest true "User Registration Data"
+// @Param user body RegisterRequest true "User Registration Data"
 // @Success 201 {object} map[string]interface{}
 // @Router /register [post]
-func Register(c *gin.Context) {
-	var input models.RegisterRequest
-	if err := c.ShouldBindJSON(&input); err != nil {
+func (h *Handler) Register(c *gin.Context) {
+	var req RegisterRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	hash, _ := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
-
-	id, err := CreateUser(input.Name, input.Email, string(hash))
+	id, err := h.svc.Register(c.Request.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "Email already in use"})
+		if errors.Is(err, ErrEmailAlreadyExists) {
+			c.JSON(http.StatusConflict, gin.H{"error": "Email already in use"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"user_id": id, "message": "Success"})
+	c.JSON(http.StatusCreated, gin.H{"user_id": id.String(), "message": "Success"})
 }
 
 // Login godoc
 // @Summary Authenticate user and return JWT
-// @Description Login with email and password to receive a JWT token
 // @Tags auth
 // @Accept json
 // @Produce json
-// @Param credentials body models.AuthRequest true "User Credentials"
+// @Param credentials body LoginRequest true "User Credentials"
 // @Success 200 {object} map[string]interface{}
-// @Failure 401 {object} map[string]interface{}
 // @Router /login [post]
-func Login(c *gin.Context) {
-	var input models.AuthRequest
-	if err := c.ShouldBindJSON(&input); err != nil {
+func (h *Handler) Login(c *gin.Context) {
+	var req LoginRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	user, err := GetUserByEmail(input.Email)
-	if err != nil || bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)) != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+	token, err := h.svc.Login(c.Request.Context(), req.Email, req.Password)
+	if err != nil {
+		if errors.Is(err, ErrInvalidCredentials) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate"})
 		return
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID.String(),
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
-	})
-
-	tokenString, _ := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-	c.JSON(http.StatusOK, gin.H{"token": tokenString})
+	c.JSON(http.StatusOK, gin.H{"token": token})
 }

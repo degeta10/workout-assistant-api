@@ -18,9 +18,11 @@ Base route group:
 
 - `/v1`
 
-Available endpoint:
+Available endpoints:
 
 - `GET /v1/health`
+- `POST /v1/register`
+- `POST /v1/login`
 
 ### Example response
 
@@ -43,17 +45,28 @@ Available endpoint:
 Notes:
 
 - The timestamp fields are dynamic.
-- Database health is currently mocked as connected in code.
+- Database health is validated using a real ping when DB is initialized.
 
 ## Project Structure
 
 ```text
 .
-├── main.go          # App setup, local server entrypoint, Lambda handler
-├── serverless.yml   # Serverless deployment config
-├── Makefile         # Build/clean/deploy commands
-├── go.mod           # Go module and dependencies
-└── bootstrap        # Compiled Linux ARM64 binary for Lambda custom runtime
+├── cmd/api/main.go          # Composition root (config, DB init, DI wiring)
+├── internal/auth/           # Feature module
+│   ├── handler.go           # Delivery layer (Gin)
+│   ├── service.go           # Business logic layer
+│   ├── repository.go        # Persistence layer (database/sql)
+│   └── models.go            # Feature models/interfaces
+├── internal/health/         # Feature module
+│   ├── handler.go           # Delivery layer (Gin)
+│   ├── service.go           # Business logic layer
+│   ├── repository.go        # Persistence layer (database/sql)
+│   └── models.go            # Feature models/interfaces
+├── internal/config/         # Environment config loading
+├── internal/database/       # Database initialization
+├── serverless.yml           # Serverless deployment config
+├── Makefile                 # Build/clean/deploy commands
+└── go.mod                   # Go module and dependencies
 ```
 
 ## Prerequisites
@@ -73,7 +86,13 @@ Optional for local development:
 Start the API locally:
 
 ```bash
-go run main.go
+make run
+```
+
+Or directly:
+
+```bash
+go run ./cmd/api/main.go
 ```
 
 Local server URL:
@@ -84,6 +103,14 @@ Test health endpoint:
 
 ```bash
 curl http://localhost:8080/v1/health
+```
+
+Stop the server with `Ctrl+C` — it shuts down gracefully with a 5-second timeout for in-flight requests.
+
+To run in release mode (disables Gin debug output):
+
+```bash
+GIN_MODE=release make run
 ```
 
 ## Build for AWS Lambda
@@ -116,19 +143,17 @@ What this does:
 
 After deployment, Serverless prints the HTTP API endpoint URL.
 
-## AWS Routing Notes
-
-- The Lambda handler trims `/dev` and `/prod` stage prefixes from incoming paths.
-- This allows routes like `/dev/v1/health` or `/prod/v1/health` to map correctly to `/v1/health` inside Gin.
-
 ## Make Targets
 
-- `make build` - Build Lambda binary
+- `make run` - Run the API locally
+- `make build` - Build Lambda binary (Linux ARM64)
 - `make clean` - Remove Lambda binary
 - `make deploy` - Clean, build, and deploy
+- `make swag-init` - Regenerate Swagger docs
+- `make fmt` - Format all Go source files
 
 ## Next Steps
 
 - Add workout session routes under `/v1`
-- Integrate and validate real database health checks
-- Add tests for handlers and Lambda adapter behavior
+- Add JWT middleware for protected routes
+- Add unit and integration tests for handlers and services

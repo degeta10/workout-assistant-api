@@ -1,6 +1,6 @@
 basePath: /v1
 definitions:
-  models.AuthRequest:
+  auth.LoginRequest:
     properties:
       email:
         type: string
@@ -8,10 +8,10 @@ definitions:
         minLength: 8
         type: string
     required:
-      - email
-      - password
+    - email
+    - password
     type: object
-  models.RegisterRequest:
+  auth.RegisterRequest:
     properties:
       email:
         type: string
@@ -21,9 +21,9 @@ definitions:
         minLength: 8
         type: string
     required:
-      - email
-      - name
-      - password
+    - email
+    - name
+    - password
     type: object
 host: localhost:8080
 info:
@@ -32,48 +32,54 @@ info:
   title: Workout Assistant API
   version: "1.0"
 paths:
-  /login:
-    post:
-      consumes:
-        - application/json
-      description: Login with email and password to receive a JWT token
-      parameters:
-        - description: User Credentials
-          in: body
-          name: credentials
-          required: true
-          schema:
-            $ref: "#/definitions/models.AuthRequest"
+  /health:
+    get:
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
           schema:
             additionalProperties: true
             type: object
-        "401":
-          description: Unauthorized
+      summary: Health check status
+      tags:
+      - health
+  /login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: User Credentials
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
           schema:
             additionalProperties: true
             type: object
       summary: Authenticate user and return JWT
       tags:
-        - auth
+      - auth
   /register:
     post:
       consumes:
-        - application/json
-      description: Create a user with name, email, and password
+      - application/json
       parameters:
-        - description: User Registration Data
-          in: body
-          name: user
-          required: true
-          schema:
-            $ref: "#/definitions/models.RegisterRequest"
+      - description: User Registration Data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
@@ -82,5 +88,5 @@ paths:
             type: object
       summary: Register a new user
       tags:
-        - auth
+      - auth
 swagger: "2.0"

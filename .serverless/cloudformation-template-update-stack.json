@@ -91,16 +91,28 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-ap-south-1-a6ef48c6-84bb",
-          "S3Key": "serverless/workout-assistant-api/dev/1774568728887-2026-03-26T23:45:28.887Z/api.zip"
+          "S3Key": "serverless/workout-assistant-api/dev/1774679482897-2026-03-28T06:31:22.897Z/api.zip"
         },
         "Handler": "bootstrap",
         "Runtime": "provided.al2023",
         "FunctionName": "workout-assistant-api-dev-api",
         "MemorySize": 1024,
-        "Timeout": 6,
+        "Timeout": 15,
         "Architectures": [
           "arm64"
         ],
+        "Environment": {
+          "Variables": {
+            "DB_HOST": "db.srpguqlwoizqigoajbhj.supabase.co",
+            "DB_PORT": "5432",
+            "DB_NAME": "postgres",
+            "DB_USER": "postgres",
+            "DB_PASSWORD": "*3W.8cm!6nTBzXR",
+            "JWT_SECRET": "asdasdsa",
+            "APP_NAME": "Workout Assistant",
+            "APP_VERSION": "1.0.0"
+          }
+        },
         "Role": {
           "Fn::GetAtt": [
             "IamRoleLambdaExecution",
@@ -112,14 +124,14 @@
         "ApiLogGroup"
       ]
     },
-    "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4": {
+    "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "ApiLambdaFunction"
         },
-        "CodeSha256": "XmmhtXofFzLXuUS0GVDb5dfbIApYkHRoXUejpWTt6Xc="
+        "CodeSha256": "wYC6IP4MJnSnf4mTOvtVT2qH4psINZ0DugXU4jGlu1o="
       }
     },
     "HttpApi": {
@@ -228,7 +240,7 @@
     "ApiLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4"
+        "Ref": "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps"
       },
       "Export": {
         "Name": "sls-workout-assistant-api-dev-ApiLambdaFunctionQualifiedArn"

@@ -5,11 +5,23 @@
     "serviceConfigFileName": "serverless.yml",
     "service": {
       "service": "workout-assistant-api",
+      "useDotenv": true,
       "provider": {
         "name": "aws",
         "runtime": "provided.al2023",
         "architecture": "arm64",
         "region": "ap-south-1",
+        "timeout": 15,
+        "environment": {
+          "DB_HOST": "db.srpguqlwoizqigoajbhj.supabase.co",
+          "DB_PORT": "5432",
+          "DB_NAME": "postgres",
+          "DB_USER": "postgres",
+          "DB_PASSWORD": "<REDACTED>",
+          "JWT_SECRET": "<REDACTED>",
+          "APP_NAME": "Workout Assistant",
+          "APP_VERSION": "1.0.0"
+        },
         "stage": "dev",
         "versionFunctions": true,
         "compiledCloudFormationTemplate": {
@@ -105,16 +117,28 @@
               "Properties": {
                 "Code": {
                   "S3Bucket": "serverless-framework-deployments-ap-south-1-a6ef48c6-84bb",
-                  "S3Key": "serverless/workout-assistant-api/dev/1774568728887-2026-03-26T23:45:28.887Z/api.zip"
+                  "S3Key": "serverless/workout-assistant-api/dev/1774679482897-2026-03-28T06:31:22.897Z/api.zip"
                 },
                 "Handler": "bootstrap",
                 "Runtime": "provided.al2023",
                 "FunctionName": "workout-assistant-api-dev-api",
                 "MemorySize": 1024,
-                "Timeout": 6,
+                "Timeout": 15,
                 "Architectures": [
                   "arm64"
                 ],
+                "Environment": {
+                  "Variables": {
+                    "DB_HOST": "db.srpguqlwoizqigoajbhj.supabase.co",
+                    "DB_PORT": "5432",
+                    "DB_NAME": "postgres",
+                    "DB_USER": "postgres",
+                    "DB_PASSWORD": "<REDACTED>",
+                    "JWT_SECRET": "<REDACTED>",
+                    "APP_NAME": "Workout Assistant",
+                    "APP_VERSION": "1.0.0"
+                  }
+                },
                 "Role": {
                   "Fn::GetAtt": [
                     "IamRoleLambdaExecution",
@@ -126,14 +150,14 @@
                 "ApiLogGroup"
               ]
             },
-            "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4": {
+            "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps": {
               "Type": "AWS::Lambda::Version",
               "DeletionPolicy": "Retain",
               "Properties": {
                 "FunctionName": {
                   "Ref": "ApiLambdaFunction"
                 },
-                "CodeSha256": "XmmhtXofFzLXuUS0GVDb5dfbIApYkHRoXUejpWTt6Xc="
+                "CodeSha256": "wYC6IP4MJnSnf4mTOvtVT2qH4psINZ0DugXU4jGlu1o="
               }
             },
             "HttpApi": {
@@ -242,7 +266,7 @@
             "ApiLambdaFunctionQualifiedArn": {
               "Description": "Current Lambda function version",
               "Value": {
-                "Ref": "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4"
+                "Ref": "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps"
               },
               "Export": {
                 "Name": "sls-workout-assistant-api-dev-ApiLambdaFunctionQualifiedArn"
@@ -300,10 +324,10 @@
             "artifact": ".serverless/api.zip"
           },
           "memory": 1024,
-          "timeout": 6,
+          "timeout": 15,
           "runtime": "provided.al2023",
           "vpc": {},
-          "versionLogicalId": "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4"
+          "versionLogicalId": "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps"
         }
       },
       "package": {
@@ -314,7 +338,7 @@
         ],
         "artifactsS3KeyDirname": "serverless/workout-assistant-api/dev/code-artifacts",
         "deploymentBucket": "serverless-framework-deployments-ap-south-1-a6ef48c6-84bb",
-        "artifactDirectoryName": "serverless/workout-assistant-api/dev/1774568728887-2026-03-26T23:45:28.887Z"
+        "artifactDirectoryName": "serverless/workout-assistant-api/dev/1774679482897-2026-03-28T06:31:22.897Z"
       }
     },
     "provider": {
@@ -322,6 +346,17 @@
       "runtime": "provided.al2023",
       "architecture": "arm64",
       "region": "ap-south-1",
+      "timeout": 15,
+      "environment": {
+        "DB_HOST": "db.srpguqlwoizqigoajbhj.supabase.co",
+        "DB_PORT": "5432",
+        "DB_NAME": "postgres",
+        "DB_USER": "postgres",
+        "DB_PASSWORD": "<REDACTED>",
+        "JWT_SECRET": "<REDACTED>",
+        "APP_NAME": "Workout Assistant",
+        "APP_VERSION": "1.0.0"
+      },
       "stage": "dev",
       "versionFunctions": true,
       "compiledCloudFormationTemplate": {
@@ -417,16 +452,28 @@
             "Properties": {
               "Code": {
                 "S3Bucket": "serverless-framework-deployments-ap-south-1-a6ef48c6-84bb",
-                "S3Key": "serverless/workout-assistant-api/dev/1774568728887-2026-03-26T23:45:28.887Z/api.zip"
+                "S3Key": "serverless/workout-assistant-api/dev/1774679482897-2026-03-28T06:31:22.897Z/api.zip"
               },
               "Handler": "bootstrap",
               "Runtime": "provided.al2023",
               "FunctionName": "workout-assistant-api-dev-api",
               "MemorySize": 1024,
-              "Timeout": 6,
+              "Timeout": 15,
               "Architectures": [
                 "arm64"
               ],
+              "Environment": {
+                "Variables": {
+                  "DB_HOST": "db.srpguqlwoizqigoajbhj.supabase.co",
+                  "DB_PORT": "5432",
+                  "DB_NAME": "postgres",
+                  "DB_USER": "postgres",
+                  "DB_PASSWORD": "<REDACTED>",
+                  "JWT_SECRET": "<REDACTED>",
+                  "APP_NAME": "Workout Assistant",
+                  "APP_VERSION": "1.0.0"
+                }
+              },
               "Role": {
                 "Fn::GetAtt": [
                   "IamRoleLambdaExecution",
@@ -438,14 +485,14 @@
               "ApiLogGroup"
             ]
           },
-          "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4": {
+          "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps": {
             "Type": "AWS::Lambda::Version",
             "DeletionPolicy": "Retain",
             "Properties": {
               "FunctionName": {
                 "Ref": "ApiLambdaFunction"
               },
-              "CodeSha256": "XmmhtXofFzLXuUS0GVDb5dfbIApYkHRoXUejpWTt6Xc="
+              "CodeSha256": "wYC6IP4MJnSnf4mTOvtVT2qH4psINZ0DugXU4jGlu1o="
             }
           },
           "HttpApi": {
@@ -554,7 +601,7 @@
           "ApiLambdaFunctionQualifiedArn": {
             "Description": "Current Lambda function version",
             "Value": {
-              "Ref": "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4"
+              "Ref": "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps"
             },
             "Export": {
               "Name": "sls-workout-assistant-api-dev-ApiLambdaFunctionQualifiedArn"
@@ -607,7 +654,7 @@
       "serviceProvider": null,
       "instanceParameters": null
     },
-    "serviceRawFile": "service: workout-assistant-api\n\nprovider:\n  name: aws\n  runtime: provided.al2023 # Use the latest Amazon Linux 2023 runtime\n  architecture: arm64 # Cheaper and faster (Graviton2)\n  region: ap-south-1\n\nfunctions:\n  api:\n    handler: bootstrap # In Go, the binary must be named 'bootstrap'\n    events:\n      - httpApi: \"*\"\n\npackage:\n  individually: true\n  patterns:\n    - \"!**\"\n    - \"bootstrap\"\n",
+    "serviceRawFile": "service: workout-assistant-api\n\nuseDotenv: true\n\nprovider:\n  name: aws\n  runtime: provided.al2023\n  architecture: arm64\n  region: ap-south-1\n  timeout: 15\n  environment:\n    DB_HOST: ${env:DB_HOST}\n    DB_PORT: ${env:DB_PORT}\n    DB_NAME: ${env:DB_NAME}\n    DB_USER: ${env:DB_USER}\n    DB_PASSWORD: ${env:DB_PASSWORD}\n    JWT_SECRET: ${env:JWT_SECRET}\n    APP_NAME: ${env:APP_NAME}\n    APP_VERSION: ${env:APP_VERSION}\n\nfunctions:\n  api:\n    handler: bootstrap\n    events:\n      - httpApi: \"*\"\n\npackage:\n  individually: true\n  patterns:\n    - \"!**\"\n    - \"bootstrap\"\n",
     "command": [
       "deploy"
     ],
@@ -620,12 +667,12 @@
     "serviceProviderAwsCfStackName": "workout-assistant-api-dev",
     "serviceProviderAwsCfStackId": "arn:aws:cloudformation:ap-south-1:189118358672:stack/workout-assistant-api-dev/9dc1b300-296c-11f1-8b4e-028c2a7da489",
     "serviceProviderAwsCfStackCreated": "2026-03-26T23:36:30.589Z",
-    "serviceProviderAwsCfStackUpdated": null,
-    "serviceProviderAwsCfStackStatus": "CREATE_COMPLETE",
+    "serviceProviderAwsCfStackUpdated": "2026-03-28T06:15:05.896Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "ApiLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:ap-south-1:189118358672:function:workout-assistant-api-dev-api:1",
+        "OutputValue": "arn:aws:lambda:ap-south-1:189118358672:function:workout-assistant-api-dev-api:12",
         "Description": "Current Lambda function version",
         "ExportName": "sls-workout-assistant-api-dev-ApiLambdaFunctionQualifiedArn"
       },
@@ -740,16 +787,28 @@
           "Properties": {
             "Code": {
               "S3Bucket": "serverless-framework-deployments-ap-south-1-a6ef48c6-84bb",
-              "S3Key": "serverless/workout-assistant-api/dev/1774568728887-2026-03-26T23:45:28.887Z/api.zip"
+              "S3Key": "serverless/workout-assistant-api/dev/1774679482897-2026-03-28T06:31:22.897Z/api.zip"
             },
             "Handler": "bootstrap",
             "Runtime": "provided.al2023",
             "FunctionName": "workout-assistant-api-dev-api",
             "MemorySize": 1024,
-            "Timeout": 6,
+            "Timeout": 15,
             "Architectures": [
               "arm64"
             ],
+            "Environment": {
+              "Variables": {
+                "DB_HOST": "db.srpguqlwoizqigoajbhj.supabase.co",
+                "DB_PORT": "5432",
+                "DB_NAME": "postgres",
+                "DB_USER": "postgres",
+                "DB_PASSWORD": "<REDACTED>",
+                "JWT_SECRET": "<REDACTED>",
+                "APP_NAME": "Workout Assistant",
+                "APP_VERSION": "1.0.0"
+              }
+            },
             "Role": {
               "Fn::GetAtt": [
                 "IamRoleLambdaExecution",
@@ -761,14 +820,14 @@
             "ApiLogGroup"
           ]
         },
-        "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4": {
+        "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps": {
           "Type": "AWS::Lambda::Version",
           "DeletionPolicy": "Retain",
           "Properties": {
             "FunctionName": {
               "Ref": "ApiLambdaFunction"
             },
-            "CodeSha256": "XmmhtXofFzLXuUS0GVDb5dfbIApYkHRoXUejpWTt6Xc="
+            "CodeSha256": "wYC6IP4MJnSnf4mTOvtVT2qH4psINZ0DugXU4jGlu1o="
           }
         },
         "HttpApi": {
@@ -877,7 +936,7 @@
         "ApiLambdaFunctionQualifiedArn": {
           "Description": "Current Lambda function version",
           "Value": {
-            "Ref": "ApiLambdaVersionMU4bWF9qujCWFWbezlhyhixkfnQl6LVW4Slyj71GU4"
+            "Ref": "ApiLambdaVersion9jqXoNscoMNIfSUzmhjfuKLp0iOwCPZ6lZBhHdyHps"
           },
           "Export": {
             "Name": "sls-workout-assistant-api-dev-ApiLambdaFunctionQualifiedArn"

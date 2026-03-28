@@ -1,45 +1,82 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/degeta10/workout-assistant-api/internal/config"
 	_ "github.com/lib/pq"
 )
 
-var DB *sql.DB
+const (
+	pingAttempts       = 5
+	pingTimeoutPerTry  = 5 * time.Second
+	pingRetryBaseDelay = 300 * time.Millisecond
+)
 
-func InitDB(cfg config.DBConfig) error {
-
-	// 1. URL Encode Password (handles special chars)
-	encodedPass := url.QueryEscape(cfg.Password)
-
-	// 2. Build Connection String
-	connStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s",
-		cfg.User, encodedPass, cfg.Host, cfg.Port, cfg.Name)
-
-	// 3. Log Connection Attempt (without password)
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
-		return fmt.Errorf("error opening database: %v", err)
+func InitDB(cfg config.DBConfig) (*sql.DB, error) {
+	if err := validateDBConfig(cfg); err != nil {
+		return nil, err
 	}
 
-	// 4. INDUSTRY STANDARD: Pool Management
-	// These settings prevent your Lambda from killing the DB
+	// 1. Prepare credentials
+	encodedPass := url.QueryEscape(cfg.Password)
+
+	// 2. Build the DSN (Standard format)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=require",
+		cfg.User, encodedPass, cfg.Host, cfg.Port, cfg.Name)
+
+	// 3. Open connection
+	db, err := sql.Open("postgres", dsn)
+	if err != nil {
+		return nil, fmt.Errorf("open db: %w", err)
+	}
+
+	// 4. Heavy Duty Lambda Settings
 	db.SetMaxOpenConns(5)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
-	// 5. Verify
-	if err := db.Ping(); err != nil {
-		return fmt.Errorf("database unreachable: %v", err)
+	// 5. Startup ping with retries for transient cold-start/network hiccups
+	var pingErr error
+	for attempt := 1; attempt <= pingAttempts; attempt++ {
+		ctx, cancel := context.WithTimeout(context.Background(), pingTimeoutPerTry)
+		pingErr = db.PingContext(ctx)
+		cancel()
+
+		if pingErr == nil {
+			return db, nil
+		}
+
+		if attempt < pingAttempts {
+			time.Sleep(time.Duration(attempt) * pingRetryBaseDelay)
+		}
 	}
 
-	DB = db
-	log.Println("Database Connection Pool Initialized")
+	_ = db.Close()
+	return nil, fmt.Errorf("ping db after %d attempts: %w", pingAttempts, pingErr)
+}
+
+func validateDBConfig(cfg config.DBConfig) error {
+	if strings.TrimSpace(cfg.Host) == "" {
+		return fmt.Errorf("db config invalid: DB_HOST is empty")
+	}
+	if strings.TrimSpace(cfg.Port) == "" {
+		return fmt.Errorf("db config invalid: DB_PORT is empty")
+	}
+	if strings.TrimSpace(cfg.User) == "" {
+		return fmt.Errorf("db config invalid: DB_USER is empty")
+	}
+	if strings.TrimSpace(cfg.Password) == "" {
+		return fmt.Errorf("db config invalid: DB_PASSWORD is empty")
+	}
+	if strings.TrimSpace(cfg.Name) == "" {
+		return fmt.Errorf("db config invalid: DB_NAME is empty")
+	}
+
 	return nil
 }
