@@ -1,0 +1,867 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Workout Assistant API - TEACHME</title>
+    <style>
+      :root {
+        --bg: #f4f7fb;
+        --panel: #ffffff;
+        --panel-2: #eef4fb;
+        --ink: #132033;
+        --muted: #4d6278;
+        --line: #d6e0eb;
+        --brand: #0d6f9a;
+        --brand-dark: #0a5575;
+        --accent: #d78b1d;
+        --code-bg: #0e1726;
+        --code-ink: #eaf1ff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        background:
+          radial-gradient(
+            circle at top left,
+            rgba(13, 111, 154, 0.08),
+            transparent 28%
+          ),
+          linear-gradient(180deg, #f9fbfe 0%, var(--bg) 100%);
+        color: var(--ink);
+        line-height: 1.7;
+      }
+
+      .shell {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr);
+        gap: 24px;
+      }
+
+      .toc {
+        position: sticky;
+        top: 18px;
+        align-self: start;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 16px 36px rgba(19, 32, 51, 0.07);
+      }
+
+      .toc h2 {
+        margin: 0 0 10px;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--brand-dark);
+      }
+
+      .toc a {
+        display: block;
+        color: var(--muted);
+        text-decoration: none;
+        padding: 7px 10px;
+        border-radius: 10px;
+        transition:
+          background-color 0.18s ease,
+          color 0.18s ease,
+          transform 0.18s ease;
+      }
+
+      .toc a:hover {
+        background: var(--panel-2);
+        color: var(--brand-dark);
+        transform: translateX(2px);
+      }
+
+      .content {
+        background: rgba(255, 255, 255, 0.94);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 34px;
+        box-shadow: 0 18px 44px rgba(19, 32, 51, 0.08);
+      }
+
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 10px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #e5f1f7;
+        color: var(--brand-dark);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        line-height: 1.1;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        max-width: 820px;
+        margin-top: 12px;
+        margin-bottom: 28px;
+        font-size: 1.02rem;
+      }
+
+      h2 {
+        margin-top: 36px;
+        margin-bottom: 12px;
+        font-size: 1.5rem;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 10px;
+      }
+
+      h3 {
+        margin-top: 22px;
+        margin-bottom: 8px;
+        color: var(--brand-dark);
+        font-size: 1.08rem;
+      }
+
+      p,
+      li,
+      td,
+      th {
+        font-size: 1rem;
+      }
+
+      ul,
+      ol {
+        padding-left: 22px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 14px 0 20px;
+        background: #fbfdff;
+      }
+
+      th,
+      td {
+        border: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+        padding: 12px;
+      }
+
+      th {
+        background: #eef5fb;
+      }
+
+      code {
+        font-family:
+          "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono",
+          monospace;
+        background: #eef4fa;
+        border: 1px solid #dce6f0;
+        padding: 0.12rem 0.38rem;
+        border-radius: 7px;
+        font-size: 0.92em;
+      }
+
+      pre {
+        margin: 12px 0 18px;
+        padding: 16px;
+        border-radius: 14px;
+        overflow: auto;
+        background: var(--code-bg);
+        color: var(--code-ink);
+        border: 1px solid #24334c;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      }
+
+      pre code {
+        background: transparent;
+        border: 0;
+        color: inherit;
+        padding: 0;
+      }
+
+      .callout {
+        margin: 18px 0;
+        padding: 14px 16px;
+        border-left: 5px solid var(--accent);
+        border-radius: 12px;
+        background: #fff8eb;
+        color: #65460f;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        background: #fbfdff;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+      }
+
+      @media (max-width: 980px) {
+        .shell {
+          grid-template-columns: 1fr;
+          padding: 14px;
+        }
+
+        .toc {
+          position: static;
+        }
+
+        .content {
+          padding: 22px;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <nav class="toc" aria-label="Table of contents">
+        <h2>Contents</h2>
+        <a href="#mental-model">1. Mental Model</a>
+        <a href="#architecture">2. Architecture</a>
+        <a href="#main-go">3. main.go</a>
+        <a href="#request-flow">4. Request Flow</a>
+        <a href="#shared-packages">5. Shared Packages</a>
+        <a href="#auth-module">6. Auth Module</a>
+        <a href="#new-module">7. New Module Tutorial</a>
+        <a href="#step-1">8. Create Folder</a>
+        <a href="#step-2">9. models.go</a>
+        <a href="#step-3">10. repository.go</a>
+        <a href="#step-4">11. service.go</a>
+        <a href="#step-5">12. handler.go</a>
+        <a href="#step-6">13. Wire in main.go</a>
+        <a href="#step-7">14. Migration</a>
+        <a href="#step-8">15. Docs and Build</a>
+        <a href="#mistakes">16. Mistakes</a>
+        <a href="#checklist">17. Checklist</a>
+        <a href="#reading-order">18. Reading Order</a>
+      </nav>
+
+      <main class="content">
+        <div class="eyebrow">Onboarding Guide</div>
+        <h1>Workout Assistant API - TEACHME</h1>
+        <p class="subtitle">
+          Practical guide for understanding this Go project and creating new
+          modules. It is written for someone coming from Laravel or PHP and
+          explains not just what to write, but why each layer exists.
+        </p>
+
+        <section id="mental-model">
+          <h2>1. Quick Mental Model: Laravel -> This Go Project</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Laravel</th>
+                <th>This Go Project</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>public/index.php</code></td>
+                <td><code>cmd/api/main.go</code></td>
+              </tr>
+              <tr>
+                <td><code>routes/api.php</code></td>
+                <td>Route registration inside <code>setupRouter()</code></td>
+              </tr>
+              <tr>
+                <td>Controller</td>
+                <td><code>internal/&lt;feature&gt;/handler.go</code></td>
+              </tr>
+              <tr>
+                <td>Service / Action</td>
+                <td><code>internal/&lt;feature&gt;/service.go</code></td>
+              </tr>
+              <tr>
+                <td>Repository / Query layer</td>
+                <td><code>internal/&lt;feature&gt;/repository.go</code></td>
+              </tr>
+              <tr>
+                <td>FormRequest</td>
+                <td>Binding tags on request structs</td>
+              </tr>
+              <tr>
+                <td>Eloquent Model</td>
+                <td>Feature structs in <code>models.go</code></td>
+              </tr>
+              <tr>
+                <td><code>config/*.php</code> + <code>.env</code></td>
+                <td>
+                  <code>internal/config/config.go</code> + <code>.env</code>
+                </td>
+              </tr>
+              <tr>
+                <td>App container</td>
+                <td>Manual dependency injection in <code>main.go</code></td>
+              </tr>
+              <tr>
+                <td>Middleware</td>
+                <td><code>internal/pkg/middleware</code> + auth middleware</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section id="architecture">
+          <h2>2. The Real Architecture Used Here</h2>
+          <p>
+            Each feature lives in its own folder under <code>internal/</code>.
+            Current examples are <code>internal/auth</code> and
+            <code>internal/health</code>.
+          </p>
+          <div class="grid">
+            <div class="card">
+              <h3>models.go</h3>
+              <ul>
+                <li>Request and response structs</li>
+                <li>Domain structs</li>
+                <li>Interfaces</li>
+                <li>Feature-specific errors</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>repository.go</h3>
+              <ul>
+                <li>Database access using <code>database/sql</code></li>
+                <li>SQL queries</li>
+                <li>Row scanning</li>
+                <li>No Gin or HTTP imports</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>service.go</h3>
+              <ul>
+                <li>Business logic</li>
+                <li>Calls repository methods</li>
+                <li>Returns plain values and errors</li>
+                <li>No Gin imports</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>handler.go</h3>
+              <ul>
+                <li>HTTP layer</li>
+                <li>JSON binding and validation</li>
+                <li>Calls service methods</li>
+                <li>Swagger comments and response mapping</li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout">
+            The dependency rule is simple:
+            <code>handler -> service -> repository -> database</code>. Never
+            reverse that direction.
+          </div>
+        </section>
+
+        <section id="main-go">
+          <h2>3. What main.go Does</h2>
+          <p>
+            <code>cmd/api/main.go</code> is the composition root. It wires the
+            app together and avoids business logic.
+          </p>
+          <ul>
+            <li>Loads config</li>
+            <li>Initializes the database</li>
+            <li>Creates the Gin router</li>
+            <li>Attaches middleware</li>
+            <li>
+              Builds <code>repo -> service -> handler</code> for each feature
+            </li>
+            <li>Registers public and protected routes</li>
+            <li>Runs locally or in AWS Lambda</li>
+          </ul>
+        </section>
+
+        <section id="request-flow">
+          <h2>4. Request Flow In This Project</h2>
+          <p>Example: <code>GET /v1/me</code></p>
+          <ol>
+            <li>Request enters Gin router.</li>
+            <li>Request ID middleware adds a <code>request_id</code>.</li>
+            <li>Request logger middleware logs the request.</li>
+            <li>Auth middleware validates the Bearer token.</li>
+            <li>Auth middleware parses the JWT <code>sub</code> claim.</li>
+            <li>
+              Auth middleware stores <code>userID</code> in request context.
+            </li>
+            <li>
+              Handler calls service using <code>c.Request.Context()</code>.
+            </li>
+            <li>Service reads context values if needed.</li>
+            <li>Service calls repository.</li>
+            <li>Repository runs SQL.</li>
+            <li>Service returns result or error.</li>
+            <li>
+              Handler returns success or pushes the error to global error
+              middleware.
+            </li>
+          </ol>
+        </section>
+
+        <section id="shared-packages">
+          <h2>5. Shared Packages You Should Know</h2>
+          <h3><code>internal/pkg/responses/responses.go</code></h3>
+          <p>
+            Defines the common API envelope and helpers like <code>OK</code>,
+            <code>Created</code>, <code>Unauthorized</code>, and
+            <code>ValidationError</code>.
+          </p>
+          <pre><code>{
+  "success": true,
+  "message": "...",
+  "data": {},
+  "errors": {}
+}</code></pre>
+          <h3><code>internal/pkg/apperrors/errors.go</code></h3>
+          <p>
+            Stores typed application errors so handlers can express HTTP intent
+            cleanly.
+          </p>
+          <h3><code>internal/pkg/middleware/error_handler.go</code></h3>
+          <p>
+            Consumes <code>c.Error(...)</code> and converts app errors and
+            validation failures into consistent JSON.
+          </p>
+        </section>
+
+        <section id="auth-module">
+          <h2>6. Current Auth Module Explained</h2>
+          <ul>
+            <li>
+              <code>models.go</code> defines the request structs, response
+              structs, interfaces, and auth errors.
+            </li>
+            <li>
+              <code>repository.go</code> reads and writes user data in
+              PostgreSQL.
+            </li>
+            <li>
+              <code>service.go</code> handles bcrypt hashing, JWT creation, and
+              current-user lookup.
+            </li>
+            <li>
+              <code>handler.go</code> binds HTTP input, maps errors, and returns
+              API responses.
+            </li>
+            <li>
+              <code>middleware.go</code> validates JWTs and pushes
+              <code>userID</code> into request context.
+            </li>
+          </ul>
+        </section>
+
+        <section id="new-module">
+          <h2>7. Tutorial: Create a New Module</h2>
+          <p>We will create a new feature called <code>workouts</code>.</p>
+          <p>Goal:</p>
+          <ul>
+            <li><code>POST /v1/workouts</code> creates a workout</li>
+            <li>
+              <code>GET /v1/workouts</code> lists the authenticated user’s
+              workouts
+            </li>
+          </ul>
+          <p>
+            These routes are protected, so <code>userID</code> comes from the
+            JWT middleware.
+          </p>
+        </section>
+
+        <section id="step-1">
+          <h2>8. Step 1: Create the Folder</h2>
+          <ul>
+            <li><code>internal/workouts/models.go</code></li>
+            <li><code>internal/workouts/repository.go</code></li>
+            <li><code>internal/workouts/service.go</code></li>
+            <li><code>internal/workouts/handler.go</code></li>
+          </ul>
+        </section>
+
+        <section id="step-2">
+          <h2>9. Step 2: Write models.go</h2>
+          <pre><code>package workouts
+
+import (
+    "context"
+    "errors"
+    "time"
+
+    "github.com/google/uuid"
+)
+
+var ErrWorkoutNameRequired = errors.New("workout name is required")
+
+type Workout struct {
+    ID        uuid.UUID `json:"id"`
+    UserID    uuid.UUID `json:"user_id"`
+    Name      string    `json:"name"`
+    Notes     string    `json:"notes"`
+    CreatedAt time.Time `json:"created_at"`
+}
+
+type CreateWorkoutRequest struct {
+    Name  string `json:"name" binding:"required"`
+    Notes string `json:"notes"`
+}
+
+type Repository interface {
+    CreateWorkout(ctx context.Context, workout Workout) (uuid.UUID, error)
+    ListWorkoutsByUserID(ctx context.Context, userID uuid.UUID) ([]Workout, error)
+}
+
+type Service interface {
+    Create(ctx context.Context, name, notes string) (uuid.UUID, error)
+    List(ctx context.Context) ([]Workout, error)
+}</code></pre>
+          <p>
+            This file defines the language of the module. Every other file
+            depends on these types and interfaces.
+          </p>
+        </section>
+
+        <section id="step-3">
+          <h2>10. Step 3: Write repository.go</h2>
+          <pre><code>package workouts
+
+import (
+    "context"
+    "database/sql"
+    "fmt"
+
+    "github.com/google/uuid"
+)
+
+type PostgresRepository struct {
+    db *sql.DB
+}
+
+func NewRepository(db *sql.DB) Repository {
+    return &PostgresRepository{db: db}
+}
+
+func (r *PostgresRepository) CreateWorkout(ctx context.Context, workout Workout) (uuid.UUID, error) {
+    query := `
+        insert into workouts (user_id, name, notes)
+        values ($1, $2, $3)
+        returning id
+    `
+
+    var id uuid.UUID
+    if err := r.db.QueryRowContext(ctx, query, workout.UserID, workout.Name, workout.Notes).Scan(&id); err != nil {
+        return uuid.Nil, fmt.Errorf("insert workout: %w", err)
+    }
+
+    return id, nil
+}
+
+func (r *PostgresRepository) ListWorkoutsByUserID(ctx context.Context, userID uuid.UUID) ([]Workout, error) {
+    query := `
+        select id, user_id, name, notes, created_at
+        from workouts
+        where user_id = $1
+        order by created_at desc
+    `
+
+    rows, err := r.db.QueryContext(ctx, query, userID)
+    if err != nil {
+        return nil, fmt.Errorf("list workouts: %w", err)
+    }
+    defer rows.Close()
+
+    var workouts []Workout
+    for rows.Next() {
+        var workout Workout
+        if err := rows.Scan(&workout.ID, &workout.UserID, &workout.Name, &workout.Notes, &workout.CreatedAt); err != nil {
+            return nil, fmt.Errorf("scan workout: %w", err)
+        }
+        workouts = append(workouts, workout)
+    }
+
+    if err := rows.Err(); err != nil {
+        return nil, fmt.Errorf("iterate workouts: %w", err)
+    }
+
+    return workouts, nil
+}</code></pre>
+          <p>
+            The repository knows SQL and nothing else. It should not know about
+            Gin, HTTP responses, or JSON.
+          </p>
+        </section>
+
+        <section id="step-4">
+          <h2>11. Step 4: Write service.go</h2>
+          <pre><code>package workouts
+
+import (
+    "context"
+    "fmt"
+    "strings"
+
+    "github.com/google/uuid"
+)
+
+type WorkoutService struct {
+    repo Repository
+}
+
+func NewService(repo Repository) Service {
+    return &WorkoutService{repo: repo}
+}
+
+func (s *WorkoutService) Create(ctx context.Context, name, notes string) (uuid.UUID, error) {
+    userIDValue := ctx.Value("userID")
+    if userIDValue == nil {
+        return uuid.Nil, ErrUserIDMissing
+    }
+
+    userID, ok := userIDValue.(uuid.UUID)
+    if !ok {
+        return uuid.Nil, fmt.Errorf("invalid user id type in context")
+    }
+
+    cleanedName := strings.TrimSpace(name)
+    if cleanedName == "" {
+        return uuid.Nil, ErrWorkoutNameRequired
+    }
+
+    id, err := s.repo.CreateWorkout(ctx, Workout{
+        UserID: userID,
+        Name:   cleanedName,
+        Notes:  strings.TrimSpace(notes),
+    })
+    if err != nil {
+        return uuid.Nil, fmt.Errorf("create workout: %w", err)
+    }
+
+    return id, nil
+}
+
+func (s *WorkoutService) List(ctx context.Context) ([]Workout, error) {
+    userIDValue := ctx.Value("userID")
+    if userIDValue == nil {
+        return nil, ErrUserIDMissing
+    }
+
+    userID, ok := userIDValue.(uuid.UUID)
+    if !ok {
+        return nil, fmt.Errorf("invalid user id type in context")
+    }
+
+    workouts, err := s.repo.ListWorkoutsByUserID(ctx, userID)
+    if err != nil {
+        return nil, fmt.Errorf("list workouts by user id: %w", err)
+    }
+
+    return workouts, nil
+}</code></pre>
+          <p>
+            The service holds business rules. It trims and validates business
+            input, decides how identity is used, and never imports Gin.
+          </p>
+        </section>
+
+        <section id="step-5">
+          <h2>12. Step 5: Write handler.go</h2>
+          <pre><code>package workouts
+
+import (
+    "errors"
+
+    "github.com/degeta10/workout-assistant-api/internal/pkg/apperrors"
+    "github.com/degeta10/workout-assistant-api/internal/pkg/responses"
+    "github.com/gin-gonic/gin"
+)
+
+type Handler struct {
+    svc Service
+}
+
+func NewHandler(svc Service) *Handler {
+    return &Handler{svc: svc}
+}
+
+func (h *Handler) RegisterProtectedRoutes(group *gin.RouterGroup) {
+    group.POST("/workouts", h.Create)
+    group.GET("/workouts", h.List)
+}
+
+func (h *Handler) Create(c *gin.Context) {
+    var req CreateWorkoutRequest
+    if err := c.ShouldBindJSON(&req); err != nil {
+        _ = c.Error(apperrors.Validation(err))
+        return
+    }
+
+    id, err := h.svc.Create(c.Request.Context(), req.Name, req.Notes)
+    if err != nil {
+        if errors.Is(err, ErrUserIDMissing) {
+            _ = c.Error(apperrors.Unauthorized("Invalid credentials", err))
+            return
+        }
+        if errors.Is(err, ErrWorkoutNameRequired) {
+            _ = c.Error(apperrors.Validation(err))
+            return
+        }
+        _ = c.Error(apperrors.Internal("Failed to create workout", err))
+        return
+    }
+
+    responses.Created(c, "Workout created successfully", map[string]any{"id": id})
+}
+
+func (h *Handler) List(c *gin.Context) {
+    workouts, err := h.svc.List(c.Request.Context())
+    if err != nil {
+        if errors.Is(err, ErrUserIDMissing) {
+            _ = c.Error(apperrors.Unauthorized("Invalid credentials", err))
+            return
+        }
+        _ = c.Error(apperrors.Internal("Failed to fetch workouts", err))
+        return
+    }
+
+    responses.OK(c, "Workouts fetched successfully", workouts)
+}</code></pre>
+          <p>
+            The handler owns HTTP. It binds JSON, pushes typed errors into
+            middleware, and returns success using the shared response helpers.
+          </p>
+          <div class="callout">
+            In this project, handlers can use <code>c.Error(...)</code> and let
+            the global error middleware format the final JSON response.
+          </div>
+        </section>
+
+        <section id="step-6">
+          <h2>13. Step 6: Wire It In main.go</h2>
+          <pre><code>workoutRepo := workouts.NewRepository(db)
+workoutSvc := workouts.NewService(workoutRepo)
+workoutHandler := workouts.NewHandler(workoutSvc)
+
+protected := r.Group("/v1")
+protected.Use(auth.RequireAuth(cfg.JWTSecret))
+{
+    authHandler.RegisterProtectedRoutes(protected)
+    workoutHandler.RegisterProtectedRoutes(protected)
+}</code></pre>
+          <p>
+            <code>main.go</code> owns construction. Features should not create
+            their own database connections or read config directly if it can be
+            injected.
+          </p>
+        </section>
+
+        <section id="step-7">
+          <h2>14. Step 7: Add the Database Migration</h2>
+          <pre><code>create table if not exists public.workouts (
+    id uuid primary key default gen_random_uuid(),
+    user_id uuid not null references public.users(id) on delete cascade,
+    name text not null,
+    notes text not null default '',
+    created_at timestamptz not null default now()
+);</code></pre>
+          <p>
+            Add the migration, then push it using the existing project workflow.
+          </p>
+        </section>
+
+        <section id="step-8">
+          <h2>15. Step 8: Regenerate Docs and Build</h2>
+          <ul>
+            <li><code>make swag-init</code></li>
+            <li><code>go build ./...</code></li>
+          </ul>
+          <p>
+            Swagger must be regenerated after route changes, and the build
+            catches interface mismatches, missing imports, and compile errors.
+          </p>
+        </section>
+
+        <section id="mistakes">
+          <h2>16. Common Mistakes To Avoid</h2>
+          <ol>
+            <li>Importing Gin inside <code>service.go</code></li>
+            <li>Writing SQL inside <code>handler.go</code></li>
+            <li>Returning HTTP responses from <code>service.go</code></li>
+            <li>
+              Forgetting <code>context.Context</code> in service and repository
+              methods
+            </li>
+            <li>Creating the database connection inside a feature</li>
+            <li>Forgetting Swagger comments on handlers</li>
+            <li>Forgetting to register the module in <code>main.go</code></li>
+          </ol>
+        </section>
+
+        <section id="checklist">
+          <h2>17. Fast Checklist When Adding a Module</h2>
+          <ul>
+            <li>Created <code>internal/&lt;feature&gt;/</code></li>
+            <li>Added <code>models.go</code></li>
+            <li>Added <code>repository.go</code></li>
+            <li>Added <code>service.go</code></li>
+            <li>Added <code>handler.go</code></li>
+            <li>Added constructor functions</li>
+            <li>Used <code>context.Context</code> everywhere required</li>
+            <li>Used shared response helpers for success paths</li>
+            <li>Used app errors or <code>c.Error(...)</code> for failures</li>
+            <li>
+              Wired <code>repo -> service -> handler</code> in
+              <code>main.go</code>
+            </li>
+            <li>Registered routes in the correct group</li>
+            <li>Added a migration if a table is needed</li>
+            <li>Ran <code>make swag-init</code></li>
+            <li>Ran <code>go build ./...</code></li>
+          </ul>
+        </section>
+
+        <section id="reading-order">
+          <h2>18. What To Read Next</h2>
+          <ol>
+            <li><code>cmd/api/main.go</code></li>
+            <li><code>internal/auth/handler.go</code></li>
+            <li><code>internal/auth/service.go</code></li>
+            <li><code>internal/auth/repository.go</code></li>
+            <li><code>internal/auth/middleware.go</code></li>
+            <li><code>internal/pkg/middleware/error_handler.go</code></li>
+            <li><code>internal/pkg/responses/responses.go</code></li>
+            <li><code>internal/health/service.go</code></li>
+          </ol>
+          <p>
+            If you understand those files, you understand the architecture and
+            can add a new module correctly.
+          </p>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
