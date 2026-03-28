@@ -73,5 +73,5 @@ func (h *Handler) Login(c *gin.Context) {
 		return
 	}
 
-	responses.OK(c, "Login successful", gin.H{"token": token})
+	responses.OK(c, "Login successful", gin.H{"access_token": token})
 }
