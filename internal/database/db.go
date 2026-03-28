@@ -46,7 +46,7 @@ func InitDBWithContext(parentCtx context.Context, cfg config.DBConfig) (*sql.DB,
 
 	// 4. Heavy Duty Lambda Settings
 	db.SetMaxOpenConns(5)
-	db.SetMaxIdleConns(5)
+	db.SetMaxIdleConns(2)
 	db.SetConnMaxLifetime(5 * time.Minute)
 
 	// 5. Startup ping with retries for transient cold-start/network hiccups
