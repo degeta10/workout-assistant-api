@@ -10,6 +10,3 @@ create table if not exists public.users (
     is_free_user boolean not null default true,
     created_at timestamptz not null default now()
 );
-
--- Explicit index for common login lookup path
-create index if not exists idx_users_email on public.users(email);

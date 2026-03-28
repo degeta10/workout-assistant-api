@@ -23,6 +23,8 @@ Available endpoints:
 - `GET /v1/health`
 - `POST /v1/register`
 - `POST /v1/login`
+- `GET /v1/me` (requires `Authorization: Bearer <token>`)
+- `GET /v1/me` (requires `Authorization: Bearer <token>`)
 
 ## Response Format
 
@@ -226,5 +228,5 @@ make db-push
 ## Next Steps
 
 - Add workout session routes under `/v1`
-- Add JWT middleware for protected routes
+- Expand and document JWT-protected routes using the existing middleware
 - Add unit and integration tests for handlers and services

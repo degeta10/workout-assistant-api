@@ -1,4 +1,4 @@
-.PHONY: swag-init run build clean deploy check-supabase db-migration-new db-push
+.PHONY: swag-init run build clean deploy fmt check-supabase db-migration-new db-diff db-push
 
 SUPABASE ?= supabase
 
@@ -18,6 +18,11 @@ run:
 db-migration-new: check-supabase
 	@if [ -z "$(name)" ]; then echo "Usage: make db-migration-new name=<migration_name>"; exit 1; fi
 	$(SUPABASE) migration new $(name)
+
+# Generate a migration file from schema diff: make db-diff name=sync_schema
+db-diff: check-supabase
+	@if [ -z "$(name)" ]; then echo "Usage: make db-diff name=<migration_name>"; exit 1; fi
+	$(SUPABASE) db diff --use-migra -f $(name)
 
 # Apply pending migrations to the linked Supabase project
 db-push: check-supabase

@@ -23,7 +23,7 @@ type DBConfig struct {
 
 // LoadConfig reads environment variables and returns a Config struct
 func LoadConfig() *Config {
-	return &Config{
+	config := &Config{
 		AppName:    getEnv("APP_NAME", "Workout Assistant"),
 		AppVersion: getEnv("APP_VERSION", "1.0.0"),
 		AppPort:    getEnv("APP_PORT", "8080"),
@@ -37,6 +37,13 @@ func LoadConfig() *Config {
 			Name:     getEnv("DB_NAME", "postgres"),
 		},
 	}
+
+	// Fail fast: JWT_SECRET must be non-empty
+	if config.JWTSecret == "" {
+		panic("JWT_SECRET environment variable is required and cannot be empty")
+	}
+
+	return config
 }
 
 // Helper to provide default values if an ENV is missing

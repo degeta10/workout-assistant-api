@@ -1,6 +1,8 @@
 module github.com/degeta10/workout-assistant-api
 
-go 1.26.1
+go 1.26
+
+toolchain go1.26.1
 
 require (
 	github.com/aws/aws-lambda-go v1.54.0

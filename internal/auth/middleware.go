@@ -11,13 +11,19 @@ import (
 	"github.com/google/uuid"
 )
 
+// contextKey is an unexported type for context keys in the auth package,
+// preventing collisions with keys from other packages.
+type contextKey string
+
+const userIDContextKey contextKey = "userID"
+
 // RequireAuth is the middleware that protects your private routes
 func RequireAuth(jwtSecret string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 1. Extract the Authorization header
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			responses.Forbidden(c, "Authorization header is missing")
+			responses.Unauthorized(c, "Authorization header is missing")
 			c.Abort()
 			return
 		}
@@ -25,7 +31,7 @@ func RequireAuth(jwtSecret string) gin.HandlerFunc {
 		// 2. Check the Bearer prefix
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			responses.Forbidden(c, "Invalid authorization format. Use 'Bearer <token>'")
+			responses.Unauthorized(c, "Invalid authorization format. Use 'Bearer <token>'")
 			c.Abort()
 			return
 		}
@@ -42,7 +48,7 @@ func RequireAuth(jwtSecret string) gin.HandlerFunc {
 		})
 
 		if err != nil || !token.Valid {
-			responses.Forbidden(c, "Invalid or expired token")
+			responses.Unauthorized(c, "Invalid or expired token")
 			c.Abort()
 			return
 		}
@@ -51,25 +57,24 @@ func RequireAuth(jwtSecret string) gin.HandlerFunc {
 		if claims, ok := token.Claims.(jwt.MapClaims); ok {
 			userIDStr, ok := claims["sub"].(string)
 			if !ok || userIDStr == "" {
-				responses.Forbidden(c, "Invalid user ID in token")
+				responses.Unauthorized(c, "Invalid user ID in token")
 				c.Abort()
 				return
 			}
 
 			userID, err := uuid.Parse(userIDStr)
 			if err != nil {
-				responses.Forbidden(c, "Invalid user ID in token")
+				responses.Unauthorized(c, "Invalid user ID in token")
 				c.Abort()
 				return
 			}
 
-			// Attach UUID to both gin context and request context for downstream layers.
-			c.Set("userID", userID)
-			ctx := context.WithValue(c.Request.Context(), "userID", userID)
+			// Attach UUID to the request context for downstream service layers.
+			ctx := context.WithValue(c.Request.Context(), userIDContextKey, userID)
 			c.Request = c.Request.WithContext(ctx)
 			c.Next() // Pass control to the actual handler (like /me)
 		} else {
-			responses.Forbidden(c, "Invalid token claims")
+			responses.Unauthorized(c, "Invalid token claims")
 			c.Abort()
 		}
 	}

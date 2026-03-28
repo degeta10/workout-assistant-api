@@ -71,7 +71,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (LoginR
 }
 
 func (s *AuthService) Me(ctx context.Context) (UserSummary, error) {
-	userIDVal := ctx.Value("userID")
+	userIDVal := ctx.Value(userIDContextKey)
 	if userIDVal == nil {
 		return UserSummary{}, ErrUserIDMissing
 	}

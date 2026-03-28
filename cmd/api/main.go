@@ -40,7 +40,13 @@ func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.AP
 		db, err := database.InitDBWithContext(ctx, cfg.DB)
 		if err != nil {
 			log.Printf("Critical: Database connection failed: %v", err)
-			return events.APIGatewayV2HTTPResponse{StatusCode: 500}, err
+			return events.APIGatewayV2HTTPResponse{
+				StatusCode: 500,
+				Headers: map[string]string{
+					"Content-Type": "application/json",
+				},
+				Body: `{"message":"internal server error"}`,
+			}, nil
 		}
 		globalDB = db // Store globally so we could theoretically close it if needed
 
