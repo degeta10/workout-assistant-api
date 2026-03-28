@@ -187,6 +187,30 @@ After deployment, Serverless prints the HTTP API endpoint URL.
 - For Lambda, use the connection details appropriate for your project/network setup.
 - If Lambda cannot reach direct host networking, use the Supabase pooler endpoint and credentials.
 
+## Database Migrations (Supabase CLI)
+
+This project now keeps SQL migrations in `supabase/migrations/`.
+
+First-time setup:
+
+```bash
+supabase login
+supabase link --project-ref <your-project-ref>
+```
+
+Common workflow:
+
+```bash
+# create an empty migration file
+make db-migration-new name=add_workouts_table
+
+# generate a diff migration file
+make db-diff name=sync_schema
+
+# apply pending migrations to linked project
+make db-push
+```
+
 ## Make Targets
 
 - `make run` - Run the API locally
@@ -195,6 +219,9 @@ After deployment, Serverless prints the HTTP API endpoint URL.
 - `make deploy` - Clean, build, and deploy
 - `make swag-init` - Regenerate Swagger docs
 - `make fmt` - Format all Go source files
+- `make db-migration-new name=<migration_name>` - Create a migration file
+- `make db-diff name=<migration_name>` - Generate migration from schema diff
+- `make db-push` - Apply pending migrations to linked Supabase project
 
 ## Next Steps
 

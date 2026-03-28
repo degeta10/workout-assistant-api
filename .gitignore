@@ -1,5 +1,7 @@
 .env
 
+supabase/.temp/
+
 bootstrap
 workout-assistant-api
 *.exe
