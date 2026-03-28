@@ -29,7 +29,7 @@ func RequireAuth(jwtSecret string) gin.HandlerFunc {
 		}
 
 		// 2. Check the Bearer prefix
-		parts := strings.Split(authHeader, " ")
+		parts := strings.Fields(authHeader)
 		if len(parts) != 2 || parts[0] != "Bearer" {
 			responses.Unauthorized(c, "Invalid authorization format. Use 'Bearer <token>'")
 			c.Abort()

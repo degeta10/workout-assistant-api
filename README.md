@@ -24,7 +24,6 @@ Available endpoints:
 - `POST /v1/register`
 - `POST /v1/login`
 - `GET /v1/me` (requires `Authorization: Bearer <token>`)
-- `GET /v1/me` (requires `Authorization: Bearer <token>`)
 
 ## Response Format
 

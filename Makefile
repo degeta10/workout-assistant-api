@@ -39,7 +39,6 @@ check-supabase:
 
 # Build the API for AWS Lambda
 build:
-	go fmt ./...
 	GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o bootstrap ./cmd/api/main.go
 
 # Clean up build artifacts

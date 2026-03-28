@@ -99,7 +99,7 @@ Example: `GET /v1/me`
 3. Request logger middleware logs the request.
 4. Auth middleware validates the Bearer token.
 5. Auth middleware parses the JWT `sub` claim.
-6. Auth middleware stores `userID` in Gin context and request context.
+6. Auth middleware stores `userID` in request context.
 7. Handler calls service using `c.Request.Context()`.
 8. Service reads values from context if needed.
 9. Service calls repository.

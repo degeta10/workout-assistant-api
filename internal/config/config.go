@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 )
 
@@ -33,14 +34,14 @@ func LoadConfig() *Config {
 			Host:     getEnv("DB_HOST", "aws-0-ap-south-1.pooler.supabase.com"),
 			Port:     getEnv("DB_PORT", "6543"),
 			User:     getEnv("DB_USER", "postgres.user"),
-			Password: getEnv("DB_PASSWORD", ""),
+			Password: getEnv("DB_PASSWORD", "password"),
 			Name:     getEnv("DB_NAME", "postgres"),
 		},
 	}
 
 	// Fail fast: JWT_SECRET must be non-empty
 	if config.JWTSecret == "" {
-		panic("JWT_SECRET environment variable is required and cannot be empty")
+		log.Fatal("Critical: JWT_SECRET environment variable is required and cannot be empty")
 	}
 
 	return config
