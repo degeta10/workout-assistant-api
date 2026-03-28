@@ -8,7 +8,7 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -36,12 +36,13 @@ var (
 func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	if ginLambda == nil {
 		cfg := config.LoadConfig()
+		setupLogger(cfg.AppEnv)
 
 		db, err := database.InitDBWithContext(ctx, cfg.DB)
 		if err != nil {
-			log.Printf("Critical: Database connection failed: %v", err)
+			slog.Error("Critical: Database connection failed", "error", err.Error())
 			return events.APIGatewayV2HTTPResponse{
-				StatusCode: 500,
+				StatusCode: http.StatusInternalServerError,
 				Headers: map[string]string{
 					"Content-Type": "application/json",
 				},
@@ -66,15 +67,17 @@ func main() {
 
 	// 2. LOCAL SERVER MODE
 	if err := godotenv.Load(); err != nil {
-		log.Println("Info: .env file not found, using system environment variables")
+		slog.Info("Info: .env file not found, using system environment variables")
 	}
 
 	cfg := config.LoadConfig()
+	setupLogger(cfg.AppEnv)
 	bootCtx, bootCancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer bootCancel()
 	db, err := database.InitDBWithContext(bootCtx, cfg.DB)
 	if err != nil {
-		log.Fatalf("Critical: Database connection failed: %v", err)
+		slog.Error("Critical: Database connection failed", "error", err.Error())
+		os.Exit(1)
 	}
 	defer db.Close()
 
@@ -85,9 +88,14 @@ func main() {
 	}
 
 	go func() {
-		log.Printf("Starting %s v%s on local port %s", cfg.AppName, cfg.AppVersion, cfg.AppPort)
+		slog.Info("Starting server",
+			"app_name", cfg.AppName,
+			"version", cfg.AppVersion,
+			"port", cfg.AppPort,
+		)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Listen: %s\n", err)
+			slog.Error("Server failed to start", "error", err.Error())
+			os.Exit(1)
 		}
 	}()
 
@@ -95,13 +103,14 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Println("Shutting down server...")
+	slog.Info("Shutting down server...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
+		slog.Error("Server forced to shutdown:", "error", err.Error())
+		os.Exit(1)
 	}
-	log.Println("Server exiting")
+	slog.Info("Server exiting")
 }
 
 func setupRouter(cfg *config.Config, db *sql.DB) *gin.Engine {
@@ -141,4 +150,20 @@ func setupRouter(cfg *config.Config, db *sql.DB) *gin.Engine {
 	}
 
 	return r
+}
+
+func setupLogger(env string) {
+	var handler slog.Handler
+	opts := &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}
+
+	if env == "local" {
+		handler = slog.NewTextHandler(os.Stdout, opts)
+	} else {
+		handler = slog.NewJSONHandler(os.Stdout, opts)
+	}
+
+	logger := slog.New(handler)
+	slog.SetDefault(logger) // This makes slog.Info() available globally
 }
