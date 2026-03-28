@@ -21,22 +21,23 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var ginLambda *ginadapter.GinLambdaV2
+var (
+	ginLambda *ginadapter.GinLambdaV2
+	globalDB  *sql.DB
+)
 
 // Handler is the entry point for AWS Lambda
 func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
 	if ginLambda == nil {
-		// 1. Load Config
 		cfg := config.LoadConfig()
 
-		// 2. Initialize Infrastructure
 		db, err := database.InitDB(cfg.DB)
 		if err != nil {
 			log.Printf("Critical: Database connection failed: %v", err)
 			return events.APIGatewayV2HTTPResponse{StatusCode: 500}, err
 		}
+		globalDB = db // Store globally so we could theoretically close it if needed
 
-		// 3. Setup Router
 		router := setupRouter(cfg, db)
 		ginLambda = ginadapter.NewV2(router)
 	}
@@ -45,13 +46,13 @@ func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.AP
 }
 
 func main() {
-	// Check if running in Lambda environment
+	// 1. Check if running in Lambda environment
 	if os.Getenv("AWS_LAMBDA_FUNCTION_NAME") != "" {
 		lambda.Start(Handler)
 		return
 	}
 
-	// --- LOCAL SERVER MODE ---
+	// 2. LOCAL SERVER MODE
 	if err := godotenv.Load(); err != nil {
 		log.Println("Info: .env file not found, using system environment variables")
 	}
@@ -90,13 +91,21 @@ func main() {
 }
 
 func setupRouter(cfg *config.Config, db *sql.DB) *gin.Engine {
-	if os.Getenv("GIN_MODE") == "release" {
+	// Set APP_ENV before initialization to silence warnings
+	if cfg.AppEnv == "release" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	r := gin.Default()
-	r.Use(gin.Recovery())
+	// Use gin.New() to have full control over middleware
+	r := gin.New()
 
+	// Manually attach standard middleware
+	r.Use(gin.Recovery())
+	if cfg.AppEnv != "release" {
+		r.Use(gin.Logger())
+	}
+
+	// Dependency Injection
 	healthRepo := health.NewRepository(db)
 	healthSvc := health.NewService(healthRepo, cfg.AppName, cfg.AppVersion)
 	healthHandler := health.NewHandler(healthSvc)

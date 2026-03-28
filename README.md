@@ -110,7 +110,7 @@ Stop the server with `Ctrl+C` — it shuts down gracefully with a 5-second timeo
 To run in release mode (disables Gin debug output):
 
 ```bash
-GIN_MODE=release make run
+APP_ENV=release make run
 ```
 
 ## Build for AWS Lambda

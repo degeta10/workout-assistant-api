@@ -10,6 +10,7 @@ type Config struct {
 	AppName    string
 	AppVersion string
 	AppPort    string
+	AppEnv     string
 }
 
 type DBConfig struct {
@@ -26,6 +27,7 @@ func LoadConfig() *Config {
 		AppName:    getEnv("APP_NAME", "Workout Assistant"),
 		AppVersion: getEnv("APP_VERSION", "1.0.0"),
 		AppPort:    getEnv("APP_PORT", "8080"),
+		AppEnv:     getEnv("APP_ENV", "debug"),
 		JWTSecret:  getEnv("JWT_SECRET", ""),
 		DB: DBConfig{
 			Host:     getEnv("DB_HOST", "aws-0-ap-south-1.pooler.supabase.com"),
