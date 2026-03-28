@@ -12,7 +12,7 @@ import (
 
 // ErrorHandler centralizes API error responses for handlers that use c.Error(err).
 func ErrorHandler() gin.HandlerFunc {
-	const internalErrorMessage = "Something went wrong"
+	internalErrorMessage := "Something went wrong"
 	return func(c *gin.Context) {
 		c.Next()
 

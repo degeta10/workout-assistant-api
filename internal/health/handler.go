@@ -21,7 +21,8 @@ func (h *Handler) RegisterRoutes(group *gin.RouterGroup) {
 // @Summary Health check status
 // @Tags health
 // @Produce json
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} responses.APIResponse
+// @Failure 500 {object} responses.APIResponse
 // @Router /health [get]
 func (h *Handler) Check(c *gin.Context) {
 	health := h.svc.Check(c.Request.Context())

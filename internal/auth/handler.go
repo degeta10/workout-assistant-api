@@ -27,7 +27,10 @@ func (h *Handler) RegisterRoutes(group *gin.RouterGroup) {
 // @Accept json
 // @Produce json
 // @Param user body RegisterRequest true "User Registration Data"
-// @Success 201 {object} map[string]interface{}
+// @Success 201 {object} responses.APIResponse
+// @Failure 409 {object} responses.APIResponse
+// @Failure 422 {object} responses.APIResponse
+// @Failure 500 {object} responses.APIResponse
 // @Router /register [post]
 func (h *Handler) Register(c *gin.Context) {
 	var req RegisterRequest
@@ -55,7 +58,10 @@ func (h *Handler) Register(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param credentials body LoginRequest true "User Credentials"
-// @Success 200 {object} map[string]interface{}
+// @Success 200 {object} responses.APIResponse
+// @Failure 401 {object} responses.APIResponse
+// @Failure 422 {object} responses.APIResponse
+// @Failure 500 {object} responses.APIResponse
 // @Router /login [post]
 func (h *Handler) Login(c *gin.Context) {
 	var req LoginRequest

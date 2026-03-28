@@ -1,3 +1,8 @@
+// Package main Workout Assistant API.
+// @title Workout Assistant API
+// @version 1.0
+// @description API for authentication and health endpoints.
+// @BasePath /v1
 package main
 
 import (
