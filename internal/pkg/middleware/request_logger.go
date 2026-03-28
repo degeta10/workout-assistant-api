@@ -1,52 +1,55 @@
 package middleware
 
 import (
-	"log"
-	"strconv"
-	"strings"
+	"log/slog"
 	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
-// RequestLogger writes structured request logs for every request.
+// RequestLogger writes structured JSON logs for every request.
 func RequestLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
 		rawQuery := c.Request.URL.RawQuery
 
+		// Process request
 		c.Next()
 
 		if rawQuery != "" {
 			path = path + "?" + rawQuery
 		}
 
-		requestID := GetRequestID(c)
 		status := c.Writer.Status()
 		latency := time.Since(start)
-		clientIP := c.ClientIP()
-		method := c.Request.Method
-		ua := c.Request.UserAgent()
-		errorMsg := strings.TrimSpace(c.Errors.ByType(gin.ErrorTypePrivate).String())
-		if errorMsg == "" {
-			errorMsg = strings.TrimSpace(c.Errors.String())
+
+		// Create a slice of structured attributes
+		attrs := []slog.Attr{
+			slog.String("request_id", GetRequestID(c)),
+			slog.String("method", c.Request.Method),
+			slog.String("path", path),
+			slog.Int("status", status),
+			slog.Int64("latency_ms", latency.Milliseconds()),
+			slog.String("client_ip", c.ClientIP()),
+			slog.String("user_agent", c.Request.UserAgent()),
 		}
 
-		fields := []string{
-			"event=request",
-			"request_id=" + requestID,
-			"method=" + method,
-			"path=" + strconv.Quote(path),
-			"status=" + strconv.Itoa(status),
-			"latency_ms=" + strconv.FormatInt(latency.Milliseconds(), 10),
-			"client_ip=" + strconv.Quote(clientIP),
-			"user_agent=" + strconv.Quote(ua),
-		}
-		if errorMsg != "" {
-			fields = append(fields, "error="+strconv.Quote(errorMsg))
+		// Extract any errors thrown during the request
+		var errorMsg string
+		if len(c.Errors) > 0 {
+			errorMsg = c.Errors.String()
+			attrs = append(attrs, slog.String("error", errorMsg))
 		}
 
-		log.Println(strings.Join(fields, " "))
+		// Log as ERROR if status is 5xx, WARN for 4xx, INFO otherwise
+		ctx := c.Request.Context()
+		if status >= 500 {
+			slog.LogAttrs(ctx, slog.LevelError, "Server Error", attrs...)
+		} else if status >= 400 {
+			slog.LogAttrs(ctx, slog.LevelWarn, "Client Error", attrs...)
+		} else {
+			slog.LogAttrs(ctx, slog.LevelInfo, "Request Completed", attrs...)
+		}
 	}
 }

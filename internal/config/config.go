@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"log/slog"
 	"os"
 )
 
@@ -41,7 +41,8 @@ func LoadConfig() *Config {
 
 	// Fail fast: JWT_SECRET must be non-empty
 	if config.JWTSecret == "" {
-		log.Fatal("Critical: JWT_SECRET environment variable is required and cannot be empty")
+		slog.Error("Critical: JWT_SECRET environment variable is required and cannot be empty")
+		os.Exit(1)
 	}
 
 	return config
