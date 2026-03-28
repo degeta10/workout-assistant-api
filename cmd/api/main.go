@@ -32,7 +32,7 @@ func Handler(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.AP
 	if ginLambda == nil {
 		cfg := config.LoadConfig()
 
-		db, err := database.InitDB(cfg.DB)
+		db, err := database.InitDBWithContext(ctx, cfg.DB)
 		if err != nil {
 			log.Printf("Critical: Database connection failed: %v", err)
 			return events.APIGatewayV2HTTPResponse{StatusCode: 500}, err
@@ -59,7 +59,9 @@ func main() {
 	}
 
 	cfg := config.LoadConfig()
-	db, err := database.InitDB(cfg.DB)
+	bootCtx, bootCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer bootCancel()
+	db, err := database.InitDBWithContext(bootCtx, cfg.DB)
 	if err != nil {
 		log.Fatalf("Critical: Database connection failed: %v", err)
 	}

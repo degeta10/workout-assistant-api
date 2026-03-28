@@ -19,6 +19,14 @@ const (
 )
 
 func InitDB(cfg config.DBConfig) (*sql.DB, error) {
+	return InitDBWithContext(context.Background(), cfg)
+}
+
+func InitDBWithContext(parentCtx context.Context, cfg config.DBConfig) (*sql.DB, error) {
+	if parentCtx == nil {
+		parentCtx = context.Background()
+	}
+
 	if err := validateDBConfig(cfg); err != nil {
 		return nil, err
 	}
@@ -44,12 +52,17 @@ func InitDB(cfg config.DBConfig) (*sql.DB, error) {
 	// 5. Startup ping with retries for transient cold-start/network hiccups
 	var pingErr error
 	for attempt := 1; attempt <= pingAttempts; attempt++ {
-		ctx, cancel := context.WithTimeout(context.Background(), pingTimeoutPerTry)
+		ctx, cancel := context.WithTimeout(parentCtx, pingTimeoutPerTry)
 		pingErr = db.PingContext(ctx)
 		cancel()
 
 		if pingErr == nil {
 			return db, nil
+		}
+
+		if parentCtx.Err() != nil {
+			_ = db.Close()
+			return nil, fmt.Errorf("db init canceled: %w", parentCtx.Err())
 		}
 
 		if attempt < pingAttempts {
