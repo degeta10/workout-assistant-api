@@ -17,6 +17,7 @@ import (
 	"github.com/degeta10/workout-assistant-api/internal/config"
 	"github.com/degeta10/workout-assistant-api/internal/database"
 	"github.com/degeta10/workout-assistant-api/internal/health"
+	"github.com/degeta10/workout-assistant-api/internal/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -101,6 +102,7 @@ func setupRouter(cfg *config.Config, db *sql.DB) *gin.Engine {
 
 	// Manually attach standard middleware
 	r.Use(gin.Recovery())
+	r.Use(middleware.ErrorHandler())
 	if cfg.AppEnv != "release" {
 		r.Use(gin.Logger())
 	}

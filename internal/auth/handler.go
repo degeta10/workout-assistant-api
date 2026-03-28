@@ -3,6 +3,7 @@ package auth
 import (
 	"errors"
 
+	"github.com/degeta10/workout-assistant-api/internal/pkg/apperrors"
 	"github.com/degeta10/workout-assistant-api/internal/pkg/responses"
 	"github.com/gin-gonic/gin"
 )
@@ -31,17 +32,17 @@ func (h *Handler) RegisterRoutes(group *gin.RouterGroup) {
 func (h *Handler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		responses.ValidationError(c, err)
+		_ = c.Error(apperrors.Validation(err))
 		return
 	}
 
 	_, err := h.svc.Register(c.Request.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, ErrEmailAlreadyExists) {
-			responses.BadRequest(c, "Email already in use")
+			_ = c.Error(apperrors.Conflict("Email already in use", err))
 			return
 		}
-		responses.InternalError(c, "Failed to create user")
+		_ = c.Error(apperrors.Internal("Failed to create user", err))
 		return
 	}
 
@@ -59,17 +60,17 @@ func (h *Handler) Register(c *gin.Context) {
 func (h *Handler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		responses.ValidationError(c, err)
+		_ = c.Error(apperrors.Validation(err))
 		return
 	}
 
 	data, err := h.svc.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
-			responses.Unauthorized(c, "Invalid credentials")
+			_ = c.Error(apperrors.Unauthorized("Invalid credentials", err))
 			return
 		}
-		responses.InternalError(c, "Failed to authenticate")
+		_ = c.Error(apperrors.Internal("Failed to authenticate", err))
 		return
 	}
 
