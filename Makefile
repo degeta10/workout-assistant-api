@@ -45,6 +45,11 @@ build:
 clean:
 	rm -f bootstrap
 
-# Deploy to AWS Lambda using Serverless Framework
-deploy: clean build
-	npx serverless deploy
+# Deploy to AWS Lambda (Development Environment)
+deploy-dev: clean build
+	npx serverless deploy --stage dev
+
+# Deploy to AWS Lambda (Production Environment)
+deploy-prod: clean build
+	@echo "⚠️ WARNING: Deploying to PRODUCTION..."
+	npx serverless deploy --stage prod

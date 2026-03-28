@@ -112,7 +112,7 @@ Core variables:
 - `APP_NAME`
 - `APP_VERSION`
 - `APP_PORT`
-- `APP_ENV` (`release` or `debug`)
+- `APP_ENV` (`prod` or `debug`)
 - `DB_HOST`
 - `DB_PORT`
 - `DB_NAME`
@@ -149,7 +149,7 @@ Stop the server with `Ctrl+C` — it shuts down gracefully with a 5-second timeo
 To run in release mode (disables Gin debug logs):
 
 ```bash
-APP_ENV=release make run
+APP_ENV=prod make run
 ```
 
 ## Build for AWS Lambda

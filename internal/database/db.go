@@ -34,9 +34,15 @@ func InitDBWithContext(parentCtx context.Context, cfg config.DBConfig) (*sql.DB,
 	// 1. Prepare credentials
 	encodedPass := url.QueryEscape(cfg.Password)
 
+	// Determine the sslmode string based on the boolean
+	sslMode := "disable"
+	if cfg.SSLMode {
+		sslMode = "require"
+	}
+
 	// 2. Build the DSN (Standard format)
-	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=require",
-		cfg.User, encodedPass, cfg.Host, cfg.Port, cfg.Name)
+	dsn := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=%s",
+		cfg.User, encodedPass, cfg.Host, cfg.Port, cfg.Name, sslMode)
 
 	// 3. Open connection
 	db, err := sql.Open("postgres", dsn)

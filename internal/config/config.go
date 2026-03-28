@@ -20,6 +20,7 @@ type DBConfig struct {
 	User     string
 	Password string
 	Name     string
+	SSLMode  bool
 }
 
 // LoadConfig reads environment variables and returns a Config struct
@@ -36,6 +37,8 @@ func LoadConfig() *Config {
 			User:     getEnv("DB_USER", "postgres.user"),
 			Password: getEnv("DB_PASSWORD", "password"),
 			Name:     getEnv("DB_NAME", "postgres"),
+			// Convert "true" string to true bool, default to true for production safety
+			SSLMode: getEnv("DB_SSLMODE", "true") == "true",
 		},
 	}
 

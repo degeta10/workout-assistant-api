@@ -115,7 +115,7 @@ func main() {
 
 func setupRouter(cfg *config.Config, db *sql.DB) *gin.Engine {
 	// Set APP_ENV before initialization to silence warnings
-	if cfg.AppEnv == "release" {
+	if cfg.AppEnv == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 

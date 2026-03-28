@@ -1,15 +1,26 @@
+# === Environments & Secrets (CRITICAL) ===
 .env
+.env.*
+!.env.example
 
+# === Serverless Framework ===
 .serverless/
-.serverlessrc
 
-supabase/.temp/
-
+# === Go Binaries & Build Artifacts ===
 bootstrap
 workout-assistant-api
 *.exe
 *.test
+*.out
 
+# === Supabase Local Development ===
+supabase/.temp/
+supabase/.branches/
+
+# === Go Modules ===
 vendor/
 
+# === OS & Editor Files ===
 .DS_Store
+.vscode/
+.idea/
