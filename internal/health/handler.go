@@ -1,8 +1,7 @@
 package health
 
 import (
-	"net/http"
-
+	"github.com/degeta10/workout-assistant-api/internal/pkg/responses"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +26,7 @@ func (h *Handler) RegisterRoutes(group *gin.RouterGroup) {
 func (h *Handler) Check(c *gin.Context) {
 	health := h.svc.Check(c.Request.Context())
 
-	c.JSON(http.StatusOK, gin.H{
+	responses.OK(c, "Health check successful", gin.H{
 		"status":      health.Status,
 		"version":     health.Version,
 		"release_id":  health.ReleaseID,

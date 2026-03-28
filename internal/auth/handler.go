@@ -2,8 +2,8 @@ package auth
 
 import (
 	"errors"
-	"net/http"
 
+	"github.com/degeta10/workout-assistant-api/internal/pkg/responses"
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,21 +31,21 @@ func (h *Handler) RegisterRoutes(group *gin.RouterGroup) {
 func (h *Handler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		responses.ValidationError(c, err)
 		return
 	}
 
-	id, err := h.svc.Register(c.Request.Context(), req.Name, req.Email, req.Password)
+	_, err := h.svc.Register(c.Request.Context(), req.Name, req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, ErrEmailAlreadyExists) {
-			c.JSON(http.StatusConflict, gin.H{"error": "Email already in use"})
+			responses.BadRequest(c, "Email already in use")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
+		responses.InternalError(c, "Failed to create user")
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"user_id": id.String(), "message": "Success"})
+	responses.Created(c, "User registered successfully")
 }
 
 // Login godoc
@@ -59,19 +59,19 @@ func (h *Handler) Register(c *gin.Context) {
 func (h *Handler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		responses.ValidationError(c, err)
 		return
 	}
 
 	token, err := h.svc.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		if errors.Is(err, ErrInvalidCredentials) {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
+			responses.Unauthorized(c, "Invalid credentials")
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to authenticate"})
+		responses.InternalError(c, "Failed to authenticate")
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"token": token})
+	responses.OK(c, "Login successful", gin.H{"token": token})
 }
