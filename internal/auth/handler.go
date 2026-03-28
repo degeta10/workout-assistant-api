@@ -16,9 +16,13 @@ func NewHandler(svc Service) *Handler {
 	return &Handler{svc: svc}
 }
 
-func (h *Handler) RegisterRoutes(group *gin.RouterGroup) {
+func (h *Handler) RegisterPublicRoutes(group *gin.RouterGroup) {
 	group.POST("/register", h.Register)
 	group.POST("/login", h.Login)
+}
+
+func (h *Handler) RegisterProtectedRoutes(group *gin.RouterGroup) {
+	group.GET("/me", h.Me)
 }
 
 // Register godoc
@@ -81,4 +85,26 @@ func (h *Handler) Login(c *gin.Context) {
 	}
 
 	responses.OK(c, "Login successful", data)
+}
+
+// Me godoc
+// @Summary Get current authenticated user info
+// @Tags auth
+// @Produce json
+// @Success 200 {object} responses.APIResponse
+// @Failure 401 {object} responses.APIResponse
+// @Failure 500 {object} responses.APIResponse
+// @Router /me [get]
+func (h *Handler) Me(c *gin.Context) {
+	user, err := h.svc.Me(c.Request.Context())
+	if err != nil {
+		if errors.Is(err, ErrUserIDMissing) || errors.Is(err, ErrUserNotFound) {
+			_ = c.Error(apperrors.Unauthorized("Invalid credentials", err))
+			return
+		}
+		_ = c.Error(apperrors.Internal("Failed to fetch user", err))
+		return
+	}
+
+	responses.OK(c, "User fetched successfully", user)
 }

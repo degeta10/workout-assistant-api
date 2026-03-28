@@ -92,6 +92,26 @@ paths:
       summary: Authenticate user and return JWT
       tags:
       - auth
+  /me:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/responses.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.APIResponse'
+      summary: Get current authenticated user info
+      tags:
+      - auth
   /register:
     post:
       consumes:

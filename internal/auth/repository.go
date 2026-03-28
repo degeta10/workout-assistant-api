@@ -67,3 +67,31 @@ func (r *PostgresRepository) GetUserByEmail(ctx context.Context, email string) (
 
 	return user, nil
 }
+
+func (r *PostgresRepository) GetUserByID(ctx context.Context, id uuid.UUID) (*User, error) {
+	if r.db == nil {
+		return nil, fmt.Errorf("get user by id: database not initialized")
+	}
+
+	const query = `SELECT id, name, email, password_hash, is_free_user, created_at
+		FROM users
+		WHERE id = $1`
+
+	user := &User{}
+	err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&user.ID,
+		&user.Name,
+		&user.Email,
+		&user.PasswordHash,
+		&user.IsFreeUser,
+		&user.CreatedAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, ErrUserNotFound
+		}
+		return nil, fmt.Errorf("select user by id: %w", err)
+	}
+
+	return user, nil
+}

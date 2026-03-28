@@ -11,6 +11,8 @@ import (
 var (
 	ErrEmailAlreadyExists = errors.New("email already exists")
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrUserNotFound       = errors.New("user not found")
+	ErrUserIDMissing      = errors.New("user id missing from context")
 )
 
 type User struct {
@@ -48,9 +50,11 @@ type UserSummary struct {
 type Repository interface {
 	CreateUser(ctx context.Context, user User) (uuid.UUID, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 }
 
 type Service interface {
 	Register(ctx context.Context, name, email, password string) (uuid.UUID, error)
 	Login(ctx context.Context, email, password string) (LoginResponse, error)
+	Me(ctx context.Context) (UserSummary, error)
 }

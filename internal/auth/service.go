@@ -69,3 +69,25 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (LoginR
 		},
 	}, nil
 }
+
+func (s *AuthService) Me(ctx context.Context) (UserSummary, error) {
+	userIDVal := ctx.Value("userID")
+	if userIDVal == nil {
+		return UserSummary{}, ErrUserIDMissing
+	}
+
+	userID, ok := userIDVal.(uuid.UUID)
+	if !ok {
+		return UserSummary{}, fmt.Errorf("invalid user id type in context")
+	}
+
+	user, err := s.repo.GetUserByID(ctx, userID)
+	if err != nil {
+		return UserSummary{}, fmt.Errorf("get user by id: %w", err)
+	}
+
+	return UserSummary{
+		Name:  user.Name,
+		Email: user.Email,
+	}, nil
+}

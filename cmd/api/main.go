@@ -122,10 +122,16 @@ func setupRouter(cfg *config.Config, db *sql.DB) *gin.Engine {
 	authSvc := auth.NewService(authRepo, cfg.JWTSecret)
 	authHandler := auth.NewHandler(authSvc)
 
-	v1 := r.Group("/v1")
+	public := r.Group("/v1")
 	{
-		healthHandler.RegisterRoutes(v1)
-		authHandler.RegisterRoutes(v1)
+		healthHandler.RegisterRoutes(public)
+		authHandler.RegisterPublicRoutes(public)
+	}
+
+	protected := r.Group("/v1")
+	protected.Use(auth.RequireAuth(cfg.JWTSecret))
+	{
+		authHandler.RegisterProtectedRoutes(protected)
 	}
 
 	return r
