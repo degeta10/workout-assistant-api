@@ -1,5 +1,8 @@
 .env
 
+.serverless/
+.serverlessrc
+
 supabase/.temp/
 
 bootstrap
