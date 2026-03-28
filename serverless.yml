@@ -17,8 +17,8 @@ provider:
     DB_PORT: ${env:DB_PORT}
     DB_NAME: ${env:DB_NAME}
     DB_USER: ${env:DB_USER}
-    DB_PASSWORD: ${ssm:/workout-assistant-api/${sls:stage}/db-password~true}
-    JWT_SECRET: ${ssm:/workout-assistant-api/${sls:stage}/jwt-secret~true}
+    DB_PASSWORD: ${ssm:/workout-assistant-api/${sls:stage}/db-password}
+    JWT_SECRET: ${ssm:/workout-assistant-api/${sls:stage}/jwt-secret}
 
 functions:
   api:
