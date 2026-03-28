@@ -2,7 +2,7 @@
 
 Workout Assistant API is a Go-based backend service built with Gin and deployable to AWS Lambda using the Serverless Framework.
 
-The current version includes a versioned API group and a health check endpoint. The codebase is structured to make it easy to add future workout-related routes.
+The current version exposes a versioned API with health and auth endpoints. The codebase follows a feature-based modular structure so new domains can be added cleanly.
 
 ## Tech Stack
 
@@ -24,28 +24,45 @@ Available endpoints:
 - `POST /v1/register`
 - `POST /v1/login`
 
-### Example response
+## Response Format
+
+All APIs use a unified response envelope:
 
 ```json
 {
-  "status": "pass",
-  "version": "1.0.0",
-  "release_id": "2026-03-27",
-  "description": "Workout Assistant API",
-  "checks": {
-    "database": {
-      "status": "connected",
-      "component_type": "datastore",
-      "time": "2026-03-27T10:00:00Z"
-    }
-  }
+  "success": true,
+  "message": "...",
+  "data": {},
+  "errors": {}
 }
 ```
 
 Notes:
 
-- The timestamp fields are dynamic.
-- Database health is validated using a real ping when DB is initialized.
+- `data` is optional and omitted when empty.
+- `errors` is populated for validation and failure responses.
+
+### Health Response Example
+
+```json
+{
+  "success": true,
+  "message": "Health check successful",
+  "data": {
+    "status": "pass",
+    "version": "1.0.0",
+    "release_id": "2026-03-27",
+    "description": "Workout Assistant API",
+    "checks": {
+      "database": {
+        "status": "connected",
+        "component_type": "datastore",
+        "time": "2026-03-27T10:00:00Z"
+      }
+    }
+  }
+}
+```
 
 ## Project Structure
 
@@ -64,10 +81,16 @@ Notes:
 │   └── models.go            # Feature models/interfaces
 ├── internal/config/         # Environment config loading
 ├── internal/database/       # Database initialization
+├── internal/pkg/responses/  # Shared API response helpers
 ├── serverless.yml           # Serverless deployment config
 ├── Makefile                 # Build/clean/deploy commands
 └── go.mod                   # Go module and dependencies
 ```
+
+## Runtime Modes
+
+- Local mode: starts Gin HTTP server on `APP_PORT`.
+- Lambda mode: auto-activated when `AWS_LAMBDA_FUNCTION_NAME` is present.
 
 ## Prerequisites
 
@@ -80,6 +103,21 @@ Install the following tools:
 Optional for local development:
 
 - `.env` file in project root (loaded automatically if present)
+
+## Environment Variables
+
+Core variables:
+
+- `APP_NAME`
+- `APP_VERSION`
+- `APP_PORT`
+- `APP_ENV` (`release` or `debug`)
+- `DB_HOST`
+- `DB_PORT`
+- `DB_NAME`
+- `DB_USER`
+- `DB_PASSWORD`
+- `JWT_SECRET`
 
 ## Run Locally
 
@@ -107,7 +145,7 @@ curl http://localhost:8080/v1/health
 
 Stop the server with `Ctrl+C` — it shuts down gracefully with a 5-second timeout for in-flight requests.
 
-To run in release mode (disables Gin debug output):
+To run in release mode (disables Gin debug logs):
 
 ```bash
 APP_ENV=release make run
@@ -142,6 +180,12 @@ What this does:
 3. Runs `npx serverless deploy`
 
 After deployment, Serverless prints the HTTP API endpoint URL.
+
+## Supabase Notes
+
+- For local direct connection, Supabase commonly uses host `db.<project-ref>.supabase.co` on port `5432`.
+- For Lambda, use the connection details appropriate for your project/network setup.
+- If Lambda cannot reach direct host networking, use the Supabase pooler endpoint and credentials.
 
 ## Make Targets
 
