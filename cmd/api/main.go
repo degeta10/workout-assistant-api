@@ -101,11 +101,10 @@ func setupRouter(cfg *config.Config, db *sql.DB) *gin.Engine {
 	r := gin.New()
 
 	// Manually attach standard middleware
+	r.Use(middleware.RequestID())
+	r.Use(middleware.RequestLogger())
 	r.Use(gin.Recovery())
 	r.Use(middleware.ErrorHandler())
-	if cfg.AppEnv != "release" {
-		r.Use(gin.Logger())
-	}
 
 	// Dependency Injection
 	healthRepo := health.NewRepository(db)

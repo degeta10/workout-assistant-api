@@ -46,6 +46,10 @@ func ErrorHandler() gin.HandlerFunc {
 			c.JSON(appErr.StatusCode, responses.APIResponse{
 				Success: false,
 				Message: appErr.Message,
+				Errors: gin.H{
+					"code":       appErr.Code,
+					"request_id": GetRequestID(c),
+				},
 			})
 			return
 		}
